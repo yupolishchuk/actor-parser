@@ -18,7 +18,6 @@ class ParseActorsCommand extends Command
     private $container;
     private $entityManager;
     private $validator;
-    private $doctrine;
     private $actorsSaved;
 
     public function __construct(ContainerInterface $container, EntityManagerInterface $em, ValidatorInterface $validator)
@@ -27,7 +26,6 @@ class ParseActorsCommand extends Command
         $this->container = $container;
         $this->entityManager = $em;
         $this->validator = $validator;
-        $this->doctrine = $this->container->get('doctrine');
         $this->actorsSaved = 0;
     }
 
@@ -128,7 +126,7 @@ class ParseActorsCommand extends Command
 
     private function actorAlreadySaved(string $actorName): bool
     {
-        $savedActor = $this->doctrine
+        $savedActor = $this->entityManager
             ->getRepository(Actor::class)
             ->findOneByName($actorName);
 
