@@ -3,7 +3,7 @@
 namespace App\Console\Command;
 
 use App\Service\ActorParser;
-use App\Entity\Actor;
+use App\Service\ActorHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -76,8 +76,16 @@ class ParseActorsCommand extends Command
             foreach($actorLinks as $actorLink) {
                 try {
                     if ($res = (new ActorParser($actorLink))->getActor()) {
-                        $this->save($res);
+                        (new ActorHelper(
+                            $this->entityManager,
+                            $this->validator,
+                            $res->actor,
+                            $res->movies
+                        ))->save($res);
+                        $this->actorsSaved++;
+                        print_r($this->actorsSaved.'. '.$res->actor->getName().' saved'.PHP_EOL);
                     }
+
                 } catch (\Exception $e) {
                     print_r($e->getMessage());
                     continue;
@@ -86,50 +94,5 @@ class ParseActorsCommand extends Command
             }
             $fromActorId = $fromActorId + count($actorLinks);
         }
-    }
-
-
-    private function save($data)
-    {
-        $actor = $data->actor;
-        $movies = $data->movies;
-
-        if ($this->actorAlreadySaved($actor->getName())) {
-            print_r($actor->getName().' is already saved '.PHP_EOL);
-        } else {
-            if ($this->processEntity($actor)) {
-                foreach ($movies as $movie) {
-                    $this->processEntity($movie);
-                }
-                $this->entityManager->flush();
-            }
-
-            $this->actorsSaved++;
-            print_r($this->actorsSaved.'. '.$actor->getName().' saved'.PHP_EOL);
-        }
-    }
-
-
-    private function processEntity($entity): bool
-    {
-        $errors = $this->validator->validate($entity);
-
-        if (count($errors) > 0) {
-            print_r((string) $errors . PHP_EOL);
-            return false;
-        } else {
-            $this->entityManager->persist($entity);
-            return true;
-        }
-    }
-
-
-    private function actorAlreadySaved(string $actorName): bool
-    {
-        $savedActor = $this->entityManager
-            ->getRepository(Actor::class)
-            ->findOneByName($actorName);
-
-        return $savedActor ? true : false;
     }
 }
