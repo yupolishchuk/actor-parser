@@ -81,7 +81,7 @@ class ParseActorsCommand extends Command
                             $this->validator,
                             $res->actor,
                             $res->movies
-                        ))->save($res);
+                        ))->save();
                         $this->actorsSaved++;
                         print_r($this->actorsSaved.'. '.$res->actor->getName().' saved'.PHP_EOL);
                     }

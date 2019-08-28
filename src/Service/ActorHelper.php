@@ -29,16 +29,13 @@ class ActorHelper
     }
 
 
-    public function save($data): void
+    public function save(): void
     {
-        $actor = $data->actor;
-        $movies = $data->movies;
-
-        if ($this->actorAlreadySaved($actor->getName())) {
-            throw new \DomainException($actor->getName().' is already saved '.PHP_EOL);
+        if ($this->actorAlreadySaved($this->actor->getName())) {
+            throw new \DomainException($this->actor->getName().' is already saved '.PHP_EOL);
         } else {
-            if ($this->processEntity($actor)) {
-                foreach ($movies as $movie) {
+            if ($this->processEntity($this->actor)) {
+                foreach ($this->movies as $movie) {
                     $this->processEntity($movie);
                 }
                 $this->entityManager->flush();
